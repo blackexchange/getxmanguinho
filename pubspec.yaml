@@ -30,8 +30,6 @@ dev_dependencies:
   image_test_utils: 1.0.0
 
 flutter:
-  uses-material-design: true
-  assets:
-   
+  uses-material-design: true   
     
 flutter_icons:
