@@ -105,7 +105,7 @@ void main() {
     sut.validatePassword(password);
   });
 
-  test('Should emit form valid', () async {
+  test('Should emit form password invalid', () async {
     sut.emailErrorStream.listen(expectAsync1((error) => expect(error, null)));
 
     sut.passwordErrorStream
@@ -117,4 +117,17 @@ void main() {
     await Future.delayed(Duration.zero);
     sut.validatePassword(password);
   });
+
+
+  test('Shouldcall auth with correct param', () async {
+   
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+    await sut.auth();
+    verify (authentication.auth(AuthenticationParams(email:email, secret:password))).called(1);
+  });  
+
+
+
+  
 }

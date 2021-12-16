@@ -47,4 +47,8 @@ class StreamLoginPresenter {
         validation.validate(field: 'password', value: password);
     _update();
   }
+
+  Future <void> auth() async{
+
+  }
 }
