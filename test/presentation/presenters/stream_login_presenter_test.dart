@@ -2,14 +2,22 @@ import 'package:faker/faker.dart';
 
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'package:testes/domain/entities/account_entity.dart';
+import 'package:testes/domain/helpers/domain_error.dart';
 import 'package:testes/presentation/protocols/protocols.dart';
 import 'package:testes/presentation/presenters/presenters.dart';
 
+import 'package:testes/domain/usecases/usecases.dart';
+
 class ValidationSpy extends Mock implements Validation {}
+
+class AuthenticationSpy extends Mock implements Authentication {}
 
 void main() {
   StreamLoginPresenter sut;
   ValidationSpy validation;
+
+  AuthenticationSpy authentication;
   String email;
   String password;
 
@@ -21,12 +29,26 @@ void main() {
     mockValidationCall(field).thenReturn(value);
   }
 
+  PostExpectation mockAuthenticationCall() => when(authentication.auth(any));
+
+  void mockAuthentication() {
+    mockAuthenticationCall()
+        .thenAnswer((_) async => (AccountEntity(faker.guid.guid())));
+  }
+
+  void mockAuthenticationError(DomainError error) {
+    mockAuthenticationCall().thenThrow(error);
+  }
+
   setUp(() {
     validation = ValidationSpy();
-    sut = StreamLoginPresenter(validation: validation);
+    authentication = AuthenticationSpy();
+    sut = StreamLoginPresenter(
+        validation: validation, authentication: authentication);
     email = faker.internet.email();
     password = faker.internet.password();
     mockValidation();
+    mockAuthentication();
   });
   test('Should call Validation with corretc email', () {
     sut.validateEmail(email);
@@ -118,16 +140,47 @@ void main() {
     sut.validatePassword(password);
   });
 
-
   test('Shouldcall auth with correct param', () async {
-   
     sut.validateEmail(email);
     sut.validatePassword(password);
     await sut.auth();
-    verify (authentication.auth(AuthenticationParams(email:email, secret:password))).called(1);
-  });  
+    verify(authentication
+            .auth(AuthenticationParams(email: email, secret: password)))
+        .called(1);
+  });
 
+  test('Should emit correct events on Auth operation success', () async {
+    sut.validateEmail(email);
+    sut.validatePassword(password);
 
+    expectLater(sut.isLoadingStream, emitsInOrder([true, false]));
 
-  
+    await sut.auth();
+  });
+
+  test('Should emit correct events on Invalid CredentialsError', () async {
+    mockAuthenticationError(DomainError.invalidCredentials);
+
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+
+    expectLater(sut.isLoadingStream, emits(false));
+    sut.mainErrorStream.listen(
+        expectAsync1((error) => expect(error, 'Credenciais inválidas.')));
+
+    await sut.auth();
+  });
+
+  test('Should emit correct events on Invalid UnexpectedError', () async {
+    mockAuthenticationError(DomainError.unexpected);
+
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+
+    expectLater(sut.isLoadingStream, emits(false));
+    sut.mainErrorStream.listen(
+        expectAsync1((error) => expect(error, 'Algo errado aconteceu.')));
+
+    await sut.auth();
+  });
 }
