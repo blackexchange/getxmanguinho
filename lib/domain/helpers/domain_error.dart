@@ -1,5 +1,3 @@
-import 'package:testes/domain/helpers/helpers.dart';
-
 enum DomainError { unexpected, invalidCredentials }
 
 extension DomainErrorExtension on DomainError {
