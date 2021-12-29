@@ -36,7 +36,7 @@ void main() {
         saveSecureCacheStorage.saveSecure(key: 'token', value: account.token));
   });
 
-  test('Should throw Unexpected error if SaveCachStorage throws', () async {
+  test('Should throw Unexpected error if SaveCacheStorage throws', () async {
     mockError();
     final future = sut.save(account);
 
