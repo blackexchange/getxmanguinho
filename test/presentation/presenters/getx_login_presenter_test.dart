@@ -13,13 +13,17 @@ class ValidationSpy extends Mock implements Validation {}
 
 class AuthenticationSpy extends Mock implements Authentication {}
 
+class SaveCurrentAccountSpy extends Mock implements SaveCurrentAccount {}
+
 void main() {
   GetxLoginPresenter sut;
   ValidationSpy validation;
+  SaveCurrentAccount saveCurrentAccount;
 
   AuthenticationSpy authentication;
   String email;
   String password;
+  String token;
 
   PostExpectation mockValidationCall(String field) => when(validation.validate(
       field: field == null ? anyNamed('field') : field,
@@ -32,21 +36,32 @@ void main() {
   PostExpectation mockAuthenticationCall() => when(authentication.auth(any));
 
   void mockAuthentication() {
-    mockAuthenticationCall()
-        .thenAnswer((_) async => (AccountEntity(faker.guid.guid())));
+    mockAuthenticationCall().thenAnswer((_) async => (AccountEntity(token)));
   }
 
   void mockAuthenticationError(DomainError error) {
     mockAuthenticationCall().thenThrow(error);
   }
 
+  PostExpectation mockSaveCurrentAccountCall() =>
+      when(saveCurrentAccount.save(any));
+
+  void mockSaveCurrentAccountError() {
+    mockSaveCurrentAccountCall().thenThrow(DomainError.unexpected);
+  }
+
   setUp(() {
     validation = ValidationSpy();
     authentication = AuthenticationSpy();
+    saveCurrentAccount = SaveCurrentAccountSpy();
+
     sut = GetxLoginPresenter(
-        validation: validation, authentication: authentication);
+        validation: validation,
+        authentication: authentication,
+        saveCurrentAccount: saveCurrentAccount);
     email = faker.internet.email();
     password = faker.internet.password();
+    token = faker.guid.guid();
     mockValidation();
     mockAuthentication();
   });
@@ -129,7 +144,7 @@ void main() {
     sut.validatePassword(password);
   });
 
-  test('Shouldcall auth with correct param', () async {
+  test('Should call auth with correct param', () async {
     sut.validateEmail(email);
     sut.validatePassword(password);
     await sut.auth();
@@ -138,11 +153,40 @@ void main() {
         .called(1);
   });
 
-  test('Should emit correct events on Auth operation success', () async {
+  test('Should call SaveCurrentAccount with correct values', () async {
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+    await sut.auth();
+    verify(saveCurrentAccount.save(AccountEntity(token))).called(1);
+  });
+
+  test('Should emit UnexpectedError if SaveCurrent Account Fails', () async {
+    mockSaveCurrentAccountError();
+
     sut.validateEmail(email);
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
+    sut.mainError.listen(
+        expectAsync1((error) => expect(error, 'Algo errado aconteceu.')));
+
+    await sut.auth();
+  });
+
+  test('Should emit correct events on Auth operation success', () async {
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+
+    expectLater(sut.isLoading.stream, emits(true));
+
+    await sut.auth();
+  });
+
+  test('Should page change on success', () async {
+    sut.validateEmail(email);
+    sut.validatePassword(password);
+
+    sut.navigateTo.listen(expectAsync1((page) => expect(page, '/surveys')));
 
     await sut.auth();
   });
