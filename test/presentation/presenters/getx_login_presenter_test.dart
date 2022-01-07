@@ -4,6 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:testes/domain/entities/account_entity.dart';
 import 'package:testes/domain/helpers/domain_error.dart';
+import 'package:testes/domain/usecases/save_current_account.dart';
 import 'package:testes/presentation/protocols/protocols.dart';
 import 'package:testes/presentation/presenters/presenters.dart';
 
