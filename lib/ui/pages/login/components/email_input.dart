@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../helpers/errors/errors.dart';
 import '../login_presenter.dart';
+import '../../../helpers/helpers.dart';
 
 class EmailInput extends StatelessWidget {
   @override
@@ -10,9 +14,9 @@ class EmailInput extends StatelessWidget {
     return Obx(() => TextFormField(
           decoration: InputDecoration(
               labelText: 'Email',
-              errorText: presenter.emailError?.value?.isEmpty == true
+              errorText: presenter.emailError.value.isNull
                   ? null
-                  : presenter.emailError.value,
+                  : presenter.emailError.value.description,
               icon: Icon(
                 Icons.email,
                 color: Theme.of(context).primaryColorLight,

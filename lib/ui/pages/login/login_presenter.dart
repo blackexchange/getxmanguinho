@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
+import '../../helpers/errors/ui_error.dart';
 
 abstract class LoginPresenter {
-  RxString get emailError;
-  RxString get passwordError;
-  RxString get mainError;
+  Rx<UIError> get emailError;
+  Rx<UIError> get passwordError;
+  Rx<UIError> get mainError;
   RxString get navigateTo;
   RxBool get isFormValid;
   RxBool get isLoading;

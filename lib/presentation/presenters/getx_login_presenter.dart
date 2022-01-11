@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
+import '../../ui/helpers/errors/errors.dart';
 
 import '../../ui/pages/login/login_presenter.dart';
 import '../../domain/helpers/helpers.dart';
@@ -15,9 +16,9 @@ class GetxLoginPresenter extends GetxController implements LoginPresenter {
   String _email;
   String _password;
 
-  var emailError = RxString();
-  var passwordError = RxString();
-  var mainError = RxString();
+  var emailError = Rx<UIError>();
+  var passwordError = Rx<UIError>();
+  var mainError = Rx<UIError>();
   var navigateTo = RxString();
   var isFormValid = false.obs;
   var isLoading = false.obs;
@@ -29,15 +30,27 @@ class GetxLoginPresenter extends GetxController implements LoginPresenter {
 
   void validateEmail(String email) {
     _email = email;
-    emailError.value = validation.validate(field: 'email', value: email);
+    emailError.value = _validateField(field: 'email', value: email);
     _validateForm();
   }
 
   void validatePassword(String password) {
     _password = password;
-    passwordError.value =
-        validation.validate(field: 'password', value: password);
+    passwordError.value = _validateField(field: 'password', value: password);
     _validateForm();
+  }
+
+  UIError _validateField({String field, String value}) {
+    final error = validation.validate(field: field, value: value);
+
+    switch (error) {
+      case ValidationError.invalidField:
+        return UIError.invalidField;
+      case ValidationError.requiredField:
+        return UIError.requiredField;
+      default:
+        return null;
+    }
   }
 
   void _validateForm() {
@@ -55,7 +68,14 @@ class GetxLoginPresenter extends GetxController implements LoginPresenter {
       await saveCurrentAccount.save(account);
       navigateTo.value = '/surveys';
     } on DomainError catch (error) {
-      mainError.value = error.description;
+      switch (error) {
+        case DomainError.invalidCredentials:
+          mainError.value = UIError.invalidCredentials;
+          break;
+        default:
+          mainError.value = UIError.unexpected;
+      }
+
       isLoading.value = false;
     }
   }

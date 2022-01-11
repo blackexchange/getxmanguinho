@@ -3,12 +3,13 @@ import 'package:faker/faker.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:testes/domain/entities/account_entity.dart';
-import 'package:testes/domain/helpers/domain_error.dart';
-import 'package:testes/domain/usecases/save_current_account.dart';
+import 'package:testes/domain/helpers/helpers.dart';
+import 'package:testes/domain/usecases/usecases.dart';
+
 import 'package:testes/presentation/protocols/protocols.dart';
 import 'package:testes/presentation/presenters/presenters.dart';
 
-import 'package:testes/domain/usecases/usecases.dart';
+import 'package:testes/ui/helpers/errors/errors.dart';
 
 class ValidationSpy extends Mock implements Validation {}
 
@@ -30,7 +31,7 @@ void main() {
       field: field == null ? anyNamed('field') : field,
       value: anyNamed('value')));
 
-  void mockValidation({String field, String value}) {
+  void mockValidation({String field, ValidationError value}) {
     mockValidationCall(field).thenReturn(value);
   }
 
@@ -72,10 +73,23 @@ void main() {
     verify(validation.validate(field: 'email', value: email)).called(1);
   });
 
-  test('Should emit email error if validation fails', () {
-    mockValidation(value: 'error');
+  test('Should emit invalidField if email is invalid', () {
+    mockValidation(value: ValidationError.invalidField);
 
-    sut.emailError.listen(expectAsync1((error) => expect(error, 'error')));
+    sut.emailError
+        .listen(expectAsync1((error) => expect(error, UIError.invalidField)));
+
+    sut.isFormValid.listen(expectAsync1((isValid) => expect(isValid, false)));
+
+    sut.validateEmail(email);
+    sut.validateEmail(email);
+  });
+
+  test('Should emit requiredField error if email empty ', () {
+    mockValidation(value: ValidationError.requiredField);
+
+    sut.emailError
+        .listen(expectAsync1((error) => expect(error, UIError.requiredField)));
 
     sut.isFormValid.listen(expectAsync1((isValid) => expect(isValid, false)));
 
@@ -100,10 +114,11 @@ void main() {
     verify(validation.validate(field: 'password', value: password)).called(1);
   });
 
-  test('Should emit password error if validation fails', () {
-    mockValidation(value: 'error');
+  test('Should emit email error if passowrd empty', () {
+    mockValidation(value: ValidationError.requiredField);
 
-    sut.passwordError.listen(expectAsync1((error) => expect(error, 'error')));
+    sut.passwordError
+        .listen(expectAsync1((error) => expect(error, UIError.requiredField)));
 
     sut.isFormValid.listen(expectAsync1((isValid) => expect(isValid, false)));
 
@@ -120,12 +135,8 @@ void main() {
     sut.validatePassword(password);
   });
 
-  test('Should emit password error if validation fails', () {
-    mockValidation(field: 'email', value: 'error');
-
-    sut.emailError.listen(expectAsync1((error) => expect(error, 'error')));
-
-    sut.passwordError.listen(expectAsync1((error) => expect(error, null)));
+  test('Should disable form button if any field is invalid', () {
+    mockValidation(field: 'email', value: ValidationError.invalidField);
 
     sut.isFormValid.listen(expectAsync1((isValid) => expect(isValid, false)));
 
@@ -133,11 +144,7 @@ void main() {
     sut.validatePassword(password);
   });
 
-  test('Should emit form password invalid', () async {
-    sut.emailError.listen(expectAsync1((error) => expect(error, null)));
-
-    sut.passwordError.listen(expectAsync1((error) => expect(error, null)));
-
+  test('Should enable form button if all fields are valide', () async {
     expectLater(sut.isFormValid.stream, emitsInOrder([false, true]));
 
     sut.validateEmail(email);
@@ -168,8 +175,8 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError.listen(
-        expectAsync1((error) => expect(error, 'Algo errado aconteceu.')));
+    sut.mainError
+        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
 
     await sut.auth();
   });
@@ -200,7 +207,7 @@ void main() {
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
     sut.mainError.listen(
-        expectAsync1((error) => expect(error, 'Credenciais inválidas.')));
+        expectAsync1((error) => expect(error, UIError.invalidCredentials)));
 
     await sut.auth();
   });
@@ -212,8 +219,8 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError.listen(
-        expectAsync1((error) => expect(error, 'Algo errado aconteceu.')));
+    sut.mainError
+        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
 
     await sut.auth();
   });

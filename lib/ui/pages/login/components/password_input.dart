@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../helpers/errors/ui_error.dart';
 import '../login_presenter.dart';
+import '../../../helpers/helpers.dart';
 
 class PasswordInput extends StatelessWidget {
   @override
@@ -10,9 +12,9 @@ class PasswordInput extends StatelessWidget {
     return Obx(() => TextFormField(
           decoration: InputDecoration(
               labelText: 'Senha',
-              errorText: presenter.passwordError?.value?.isEmpty == true
+              errorText: presenter.passwordError.isNull
                   ? null
-                  : presenter.passwordError.value,
+                  : presenter.passwordError.value.description,
               icon: Icon(
                 Icons.lock,
                 color: Theme.of(context).primaryColorLight,

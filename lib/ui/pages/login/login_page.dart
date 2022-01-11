@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../helpers/helpers.dart';
 
 import '../../components/components.dart';
 import 'components/components.dart';
@@ -26,12 +27,6 @@ class LoginPage extends StatelessWidget {
             showLoading(context);
           } else {
             hideLoading(context);
-          }
-        });
-
-        presenter.mainError.listen((error) {
-          if (error != null) {
-            showErrorMessage(context, error);
           }
         });
 
@@ -63,7 +58,7 @@ class LoginPage extends StatelessWidget {
                         FlatButton.icon(
                           onPressed: () {},
                           icon: Icon(Icons.person),
-                          label: Text('Criar Conta'),
+                          label: Text(R.strings.addAccount),
                         )
                       ],
                     ),
