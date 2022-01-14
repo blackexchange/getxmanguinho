@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../helpers/errors/ui_error.dart';
-import '../login_presenter.dart';
+import '../signup_presenter.dart';
 import '../../../helpers/helpers.dart';
 
 class PasswordInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final presenter = Get.find<LoginPresenter>();
+    final presenter = Get.find<SignUpPresenter>();
 
     return Obx(() => TextFormField(
           decoration: InputDecoration(

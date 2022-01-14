@@ -18,7 +18,7 @@ class AuthenticationSpy extends Mock implements Authentication {}
 class SaveCurrentAccountSpy extends Mock implements SaveCurrentAccount {}
 
 void main() {
-  GetxLoginPresenter sut;
+  GetxSignUpPresenter sut;
   ValidationSpy validation;
   SaveCurrentAccount saveCurrentAccount;
 
@@ -58,7 +58,7 @@ void main() {
     authentication = AuthenticationSpy();
     saveCurrentAccount = SaveCurrentAccountSpy();
 
-    sut = GetxLoginPresenter(
+    sut = GetxSignUpPresenter(
         validation: validation,
         authentication: authentication,
         saveCurrentAccount: saveCurrentAccount);

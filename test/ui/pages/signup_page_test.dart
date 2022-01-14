@@ -9,21 +9,28 @@ import 'package:testes/ui/helpers/errors/ui_error.dart';
 
 import 'package:testes/ui/pages/pages.dart';
 
-class LoginPresenterSpy extends Mock implements LoginPresenter {}
+class SignUpPresenterSpy extends Mock implements SignUpPresenter {}
 
 void main() {
-  LoginPresenter presenter;
+  SignUpPresenter presenter;
 
   var emailError = Rx<UIError>();
   var passwordError = Rx<UIError>();
+  var passwordConfirmationError = Rx<UIError>();
+  var nameError = Rx<UIError>();
+
   var mainError = Rx<UIError>();
   var navigateTo = RxString();
   var isFormValid = RxBool();
   var isLoading = RxBool();
 
   void mockStreams() {
+    when(presenter.nameError).thenAnswer((_) => nameError);
     when(presenter.emailError).thenAnswer((_) => emailError);
     when(presenter.passwordError).thenAnswer((_) => passwordError);
+    when(presenter.passwordConfirmationError)
+        .thenAnswer((_) => passwordConfirmationError);
+
     when(presenter.isFormValid).thenAnswer((_) => isFormValid);
     when(presenter.isLoading).thenAnswer((_) => isLoading);
     when(presenter.mainError).thenAnswer((_) => mainError);
@@ -31,23 +38,29 @@ void main() {
   }
 
   Future<void> loadPage(WidgetTester tester) async {
-    presenter = Get.put<LoginPresenter>(LoginPresenterSpy());
+    presenter = Get.put<SignUpPresenter>(SignUpPresenterSpy());
     mockStreams();
 
-    final loginPage = GetMaterialApp(
-      initialRoute: '/login',
+    final signUpPage = GetMaterialApp(
+      initialRoute: '/signUp',
       getPages: [
-        GetPage(name: '/login', page: () => LoginPage(presenter)),
+        GetPage(name: '/signUp', page: () => SignUpPage(presenter)),
         GetPage(
             name: '/any_route', page: () => Scaffold(body: Text('fake page'))),
       ],
     );
-    await tester.pumpWidget(loginPage);
+    await tester.pumpWidget(signUpPage);
   }
 
   testWidgets('Should load with correct initial state',
       (WidgetTester tester) async {
     await loadPage(tester);
+
+    final nameTextChildren = find.descendant(
+        of: find.bySemanticsLabel('Nome'), matching: find.byType(Text));
+    expect(nameTextChildren, findsOneWidget,
+        reason:
+            'Busca mais de um campo texto no input. Se houver significa que tem erro no campo.');
 
     final emailTextChildren = find.descendant(
         of: find.bySemanticsLabel('Email'), matching: find.byType(Text));
@@ -62,6 +75,13 @@ void main() {
         reason:
             'Busca mais de um campo texto no input. Se houver significa que tem erro no campo.');
 
+    final passwordConfirmationTextChildren = find.descendant(
+        of: find.bySemanticsLabel('Confirmar Senha'),
+        matching: find.byType(Text));
+    expect(passwordConfirmationTextChildren, findsOneWidget,
+        reason:
+            'Busca mais de um campo texto no input. Se houver significa que tem erro no campo.');
+
     final button = tester.widget<RaisedButton>(find.byType(RaisedButton));
     expect(button.onPressed, null);
 
@@ -72,6 +92,10 @@ void main() {
       (WidgetTester tester) async {
     await loadPage(tester);
 
+    final nome = faker.internet.password();
+    await tester.enterText(find.bySemanticsLabel('Nome'), nome);
+    verify(presenter.validateName(nome));
+
     final email = faker.internet.email();
     await tester.enterText(find.bySemanticsLabel('Email'), email);
     verify(presenter.validateEmail(email));
@@ -79,6 +103,11 @@ void main() {
     final senha = faker.internet.password();
     await tester.enterText(find.bySemanticsLabel('Senha'), senha);
     verify(presenter.validatePassword(senha));
+
+    final senhaConfirma = faker.internet.password();
+    await tester.enterText(
+        find.bySemanticsLabel('Confirmar Senha'), senhaConfirma);
+    verify(presenter.validatePasswordConfirmation(senhaConfirma));
   });
 
   testWidgets('Should present error if email is invalid',
@@ -88,19 +117,10 @@ void main() {
     emailError.value = UIError.invalidField;
     await tester.pump();
     expect(find.text('Campo inválido'), findsOneWidget);
-  });
-
-  testWidgets('Should present error if email is empty',
-      (WidgetTester tester) async {
-    await loadPage(tester);
 
     emailError.value = UIError.requiredField;
     await tester.pump();
     expect(find.text('Campo obrigatório'), findsOneWidget);
-  });
-
-  testWidgets('Should present if email valid', (WidgetTester tester) async {
-    await loadPage(tester);
 
     emailError.value = null;
     await tester.pump();
@@ -111,30 +131,68 @@ void main() {
         findsOneWidget);
   });
 
-  testWidgets('Should present if password empty', (WidgetTester tester) async {
+  testWidgets('Should present name error', (WidgetTester tester) async {
     await loadPage(tester);
+
+    nameError.value = UIError.invalidField;
+    await tester.pump();
+    expect(find.text('Campo inválido'), findsOneWidget);
+
+    nameError.value = UIError.requiredField;
+    await tester.pump();
+    expect(find.text('Campo obrigatório'), findsOneWidget);
+
+    nameError.value = null;
+    await tester.pump();
+
+    expect(
+        find.descendant(
+            of: find.bySemanticsLabel('Nome'), matching: find.byType(Text)),
+        findsOneWidget);
+  });
+
+  testWidgets('Should present Senha ', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    passwordError.value = UIError.invalidField;
+    await tester.pump();
+    expect(find.text('Campo inválido'), findsOneWidget);
 
     passwordError.value = UIError.requiredField;
     await tester.pump();
-
     expect(find.text('Campo obrigatório'), findsOneWidget);
-  });
-
-  testWidgets('Should present no error if password valid',
-      (WidgetTester tester) async {
-    await loadPage(tester);
 
     passwordError.value = null;
     await tester.pump();
 
     expect(
         find.descendant(
-            of: find.bySemanticsLabel('Senha'), matching: find.byType(Text)),
+            of: find.bySemanticsLabel('Nome'), matching: find.byType(Text)),
         findsOneWidget);
   });
 
-  testWidgets('Should enable button is form is valid',
-      (WidgetTester tester) async {
+  testWidgets('Should present Senha Confirmação', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    passwordConfirmationError.value = UIError.invalidField;
+    await tester.pump();
+    expect(find.text('Campo inválido'), findsOneWidget);
+
+    passwordConfirmationError.value = UIError.requiredField;
+    await tester.pump();
+    expect(find.text('Campo obrigatório'), findsOneWidget);
+
+    passwordConfirmationError.value = null;
+    await tester.pump();
+
+    expect(
+        find.descendant(
+            of: find.bySemanticsLabel('Confirmar Senha'),
+            matching: find.byType(Text)),
+        findsOneWidget);
+  });
+
+  testWidgets('Should enable button is form ', (WidgetTester tester) async {
     await loadPage(tester);
 
     isFormValid.value = true;
@@ -154,17 +212,20 @@ void main() {
     final button = tester.widget<RaisedButton>(find.byType(RaisedButton));
     expect(button.onPressed, null);
   });
+
   testWidgets('Should call function', (WidgetTester tester) async {
     await loadPage(tester);
 
     isFormValid.value = true;
+    final button = find.byType(RaisedButton);
     await tester.pump();
-    await tester.tap(find.byType(RaisedButton));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+
     await tester.pump();
 
-    verify(presenter.auth()).called(1);
+    verify(presenter.signUp()).called(1);
   });
-
   testWidgets('Should call loading', (WidgetTester tester) async {
     await loadPage(tester);
 
@@ -185,15 +246,15 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
-  testWidgets('Should error auth error', (WidgetTester tester) async {
+
+  testWidgets('Should error signup error', (WidgetTester tester) async {
     await loadPage(tester);
 
-    mainError.value = UIError.invalidCredentials;
+    mainError.value = UIError.emailInUse;
     await tester.pump();
 
-    expect(find.text('Credenciais inválidas.'), findsOneWidget);
+    expect(find.text('Email já está em uso.'), findsOneWidget);
   });
-
   testWidgets('Should error auth throws', (WidgetTester tester) async {
     await loadPage(tester);
 
@@ -217,10 +278,10 @@ void main() {
 
     navigateTo.value = '';
     await tester.pump();
-    expect(Get.currentRoute, '/login');
+    expect(Get.currentRoute, '/signUp');
 
     navigateTo.value = null;
     await tester.pump();
-    expect(Get.currentRoute, '/login');
+    expect(Get.currentRoute, '/signUp');
   });
 }

@@ -4,12 +4,12 @@ import '../../helpers/helpers.dart';
 
 import '../../components/components.dart';
 import 'components/components.dart';
-import 'login_presenter.dart';
+import 'signup_presenter.dart';
 
-class LoginPage extends StatelessWidget {
-  final LoginPresenter presenter;
+class SignUpPage extends StatelessWidget {
+  final SignUpPresenter presenter;
 
-  LoginPage(this.presenter);
+  SignUpPage(this.presenter);
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,6 @@ class LoginPage extends StatelessWidget {
             showErrorMessage(context, error.description);
           }
         });
-
         presenter.navigateTo.listen((page) {
           if (page?.isNotEmpty == true) {
             Get.offAllNamed(page);
@@ -55,15 +54,20 @@ class LoginPage extends StatelessWidget {
                   child: Form(
                     child: Column(
                       children: <Widget>[
-                        EmailInput(),
+                        NomeInput(),
                         Padding(
-                          padding: EdgeInsets.only(top: 8.0, bottom: 32),
-                          child: PasswordInput(),
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: EmailInput(),
                         ),
-                        LoginButton(),
+                        PasswordInput(),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: PasswordConfirmationInput(),
+                        ),
+                        SignUpButton(),
                         FlatButton.icon(
                           onPressed: () {},
-                          icon: Icon(Icons.person),
+                          icon: Icon(Icons.exit_to_app),
                           label: Text(R.strings.addAccount),
                         )
                       ],
