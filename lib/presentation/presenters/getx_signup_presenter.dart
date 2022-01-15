@@ -11,14 +11,20 @@ import '../protocols/protocols.dart';
 
 class GetxSignUpPresenter extends GetxController {
   final Validation validation;
-  final Authentication authentication;
+  final AddAccount addAccount;
+  //final Authentication authentication;
   final SaveCurrentAccount saveCurrentAccount;
 
   String _email;
   String _password;
+  String _name;
+  String _passwordConfirmation;
 
   var emailError = Rx<UIError>();
   var passwordError = Rx<UIError>();
+  var passwordConfirmationError = Rx<UIError>();
+  var nameError = Rx<UIError>();
+
   var mainError = Rx<UIError>();
   var navigateTo = RxString();
   var isFormValid = false.obs;
@@ -26,7 +32,7 @@ class GetxSignUpPresenter extends GetxController {
 
   GetxSignUpPresenter(
       {@required this.validation,
-      @required this.authentication,
+      @required this.addAccount,
       @required this.saveCurrentAccount});
 
   void validateEmail(String email) {
@@ -35,9 +41,22 @@ class GetxSignUpPresenter extends GetxController {
     _validateForm();
   }
 
+  void validateName(String name) {
+    _name = name;
+    nameError.value = _validateField(field: 'name', value: name);
+    _validateForm();
+  }
+
   void validatePassword(String password) {
     _password = password;
     passwordError.value = _validateField(field: 'password', value: password);
+    _validateForm();
+  }
+
+  void validatePasswordConfirmation(String passwordConfirmation) {
+    _passwordConfirmation = passwordConfirmation;
+    passwordConfirmationError.value = _validateField(
+        field: 'passwordConfirmation', value: passwordConfirmation);
     _validateForm();
   }
 
@@ -57,21 +76,28 @@ class GetxSignUpPresenter extends GetxController {
   void _validateForm() {
     isFormValid.value = emailError.value == null &&
         passwordError.value == null &&
+        nameError.value == null &&
+        passwordConfirmationError.value == null &&
+        _name != null &&
         _email != null &&
+        _passwordConfirmation != null &&
         _password != null;
   }
 
-  Future<void> auth() async {
+  Future<void> signUp() async {
     try {
       isLoading.value = true;
-      final account = await authentication
-          .auth(AuthenticationParams(email: _email, secret: _password));
+      final account = await addAccount.add(AddAccountParams(
+          email: _email,
+          password: _password,
+          name: _name,
+          passwordConfirmation: _passwordConfirmation));
       await saveCurrentAccount.save(account);
       navigateTo.value = '/surveys';
     } on DomainError catch (error) {
       switch (error) {
-        case DomainError.invalidCredentials:
-          mainError.value = UIError.invalidCredentials;
+        case DomainError.emailInUse:
+          mainError.value = UIError.emailInUse;
           break;
         default:
           mainError.value = UIError.unexpected;
