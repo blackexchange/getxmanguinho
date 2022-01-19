@@ -15,6 +15,8 @@ extension UIErrorExtension on UIError {
         return R.strings.msgRequiredField;
       case UIError.invalidField:
         return 'Campo inválido';
+      case UIError.invalidCredentials:
+        return 'Credenciais inválidas';
       case UIError.emailInUse:
         return 'Email já está em uso.';
       default:

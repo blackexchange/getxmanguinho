@@ -191,7 +191,7 @@ void main() {
     mainError.value = UIError.invalidCredentials;
     await tester.pump();
 
-    expect(find.text('Credenciais inválidas.'), findsOneWidget);
+    expect(find.text('Credenciais inválidas'), findsOneWidget);
   });
 
   testWidgets('Should error auth throws', (WidgetTester tester) async {
@@ -222,5 +222,16 @@ void main() {
     navigateTo.value = null;
     await tester.pump();
     expect(Get.currentRoute, '/login');
+  });
+  testWidgets('Should call to SignUp', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    final button = find.text('Criar Conta');
+    await tester.ensureVisible(button);
+
+    await tester.tap(button);
+    await tester.pump();
+
+    verify(presenter.goToSignUp()).called(1);
   });
 }

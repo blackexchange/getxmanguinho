@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:testes/main/factories/pages/login/login.dart';
+import 'package:testes/main/factories/factories.dart';
 import 'package:testes/validation/validators/validators.dart';
 
 void main() {
@@ -9,7 +9,8 @@ void main() {
     expect(validations, [
       RequiredFieldValidation('email'),
       EmailValidation('email'),
-      RequiredFieldValidation('password')
+      RequiredFieldValidation('password'),
+      MinLengthValidation(field: 'password', size: 3)
     ]);
   });
 }

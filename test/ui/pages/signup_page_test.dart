@@ -42,9 +42,9 @@ void main() {
     mockStreams();
 
     final signUpPage = GetMaterialApp(
-      initialRoute: '/signUp',
+      initialRoute: '/signup',
       getPages: [
-        GetPage(name: '/signUp', page: () => SignUpPage(presenter)),
+        GetPage(name: '/signup', page: () => SignUpPage(presenter)),
         GetPage(
             name: '/any_route', page: () => Scaffold(body: Text('fake page'))),
       ],
@@ -278,10 +278,21 @@ void main() {
 
     navigateTo.value = '';
     await tester.pump();
-    expect(Get.currentRoute, '/signUp');
+    expect(Get.currentRoute, '/signup');
 
     navigateTo.value = null;
     await tester.pump();
-    expect(Get.currentRoute, '/signUp');
+    expect(Get.currentRoute, '/signup');
+  });
+  testWidgets('Should call to Login', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    final button = find.text('Login');
+    await tester.ensureVisible(button);
+
+    await tester.tap(button);
+    await tester.pump();
+
+    verify(presenter.goToLogin()).called(1);
   });
 }

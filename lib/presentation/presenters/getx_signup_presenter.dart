@@ -1,18 +1,17 @@
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
-import 'package:testes/ui/pages/pages.dart';
+
+import '../../ui/pages/pages.dart';
 import '../../ui/helpers/errors/errors.dart';
 
-import '../../ui/pages/login/login_presenter.dart';
 import '../../domain/helpers/helpers.dart';
 import '../../domain/usecases/usecases.dart';
 
 import '../protocols/protocols.dart';
 
-class GetxSignUpPresenter extends GetxController {
+class GetxSignUpPresenter extends GetxController implements SignUpPresenter {
   final Validation validation;
   final AddAccount addAccount;
-  //final Authentication authentication;
   final SaveCurrentAccount saveCurrentAccount;
 
   String _email;
@@ -37,31 +36,37 @@ class GetxSignUpPresenter extends GetxController {
 
   void validateEmail(String email) {
     _email = email;
-    emailError.value = _validateField(field: 'email', value: email);
+    emailError.value = _validateField('email');
     _validateForm();
   }
 
   void validateName(String name) {
     _name = name;
-    nameError.value = _validateField(field: 'name', value: name);
+    nameError.value = _validateField('name');
     _validateForm();
   }
 
   void validatePassword(String password) {
     _password = password;
-    passwordError.value = _validateField(field: 'password', value: password);
+    passwordError.value = _validateField('password');
     _validateForm();
   }
 
   void validatePasswordConfirmation(String passwordConfirmation) {
     _passwordConfirmation = passwordConfirmation;
-    passwordConfirmationError.value = _validateField(
-        field: 'passwordConfirmation', value: passwordConfirmation);
+    passwordConfirmationError.value = _validateField('passwordConfirmation');
     _validateForm();
   }
 
-  UIError _validateField({String field, String value}) {
-    final error = validation.validate(field: field, value: value);
+  UIError _validateField(String field) {
+    final formData = {
+      'name': _name,
+      'email': _email,
+      'password': _password,
+      'passwordConfirmation': _passwordConfirmation
+    };
+
+    final error = validation.validate(field: field, input: formData);
 
     switch (error) {
       case ValidationError.invalidField:
@@ -105,5 +110,9 @@ class GetxSignUpPresenter extends GetxController {
 
       isLoading.value = false;
     }
+  }
+
+  void goToLogin() async {
+    navigateTo.value = '/login';
   }
 }

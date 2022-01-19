@@ -9,19 +9,24 @@ void main() {
     sut = EmailValidation('any_field');
   });
 
+  test('SHould return null on invalid case', () {
+    expect(sut.validate({}), null);
+  });
+
   test('SHould return null if email is  empty', () {
-    expect(sut.validate(''), null);
+    expect(sut.validate({'any_field': ''}), null);
   });
 
   test('SHould return null if email is  null', () {
-    expect(sut.validate(null), null);
+    expect(sut.validate({'any_field': null}), null);
   });
 
   test('SHould return null if email is  valid', () {
-    expect(sut.validate('neville@ig.com.br'), null);
+    expect(sut.validate({'any_field': 'neville@ig.com.br'}), null);
   });
 
   test('SHould return null if email is  invalid', () {
-    expect(sut.validate('neville@ig.'), ValidationError.invalidField);
+    expect(sut.validate({'any_field': 'neville@ig.'}),
+        ValidationError.invalidField);
   });
 }

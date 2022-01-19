@@ -29,7 +29,7 @@ void main() {
 
   PostExpectation mockValidationCall(String field) => when(validation.validate(
       field: field == null ? anyNamed('field') : field,
-      value: anyNamed('value')));
+      input: anyNamed('input')));
 
   void mockValidation({String field, ValidationError value}) {
     mockValidationCall(field).thenReturn(value);
@@ -66,12 +66,16 @@ void main() {
     password = faker.internet.password();
     token = faker.guid.guid();
     mockValidation();
+
     mockAuthentication();
   });
+
   test('Should call Validation with corretc email', () {
+    final formData = {'email': email, 'password': null};
+
     sut.validateEmail(email);
 
-    verify(validation.validate(field: 'email', value: email)).called(1);
+    verify(validation.validate(field: 'email', input: formData)).called(1);
   });
 
   test('Should emit invalidField if email is invalid', () {
@@ -110,9 +114,10 @@ void main() {
   //PASSWORD
 
   test('Should call Validation with corretc password', () {
+    final formData = {'email': null, 'password': password};
     sut.validatePassword(password);
 
-    verify(validation.validate(field: 'password', value: password)).called(1);
+    verify(validation.validate(field: 'password', input: formData)).called(1);
   });
 
   test('Should emit email error if passowrd empty', () {
@@ -224,5 +229,10 @@ void main() {
         .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
 
     await sut.auth();
+  });
+
+  test('Should  go to signup on link click', () async {
+    sut.navigateTo.listen(expectAsync1((page) => expect(page, '/signup')));
+    sut.goToSignUp();
   });
 }
