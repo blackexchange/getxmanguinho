@@ -181,8 +181,7 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError
-        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
+    expectLater(sut.mainError.stream, emitsInOrder([null, UIError.unexpected]));
 
     await sut.auth();
   });
@@ -192,6 +191,7 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emits(true));
+    expectLater(sut.mainError.stream, emits(null));
 
     await sut.auth();
   });
@@ -212,8 +212,8 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError.listen(
-        expectAsync1((error) => expect(error, UIError.invalidCredentials)));
+    expectLater(
+        sut.mainError.stream, emitsInOrder([null, UIError.invalidCredentials]));
 
     await sut.auth();
   });
@@ -225,8 +225,7 @@ void main() {
     sut.validatePassword(password);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError
-        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
+    expectLater(sut.mainError.stream, emitsInOrder([null, UIError.unexpected]));
 
     await sut.auth();
   });

@@ -48,7 +48,7 @@ class SignUpPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 LoginHeader(),
-                Headline1(text: 'Login'),
+                Headline1(text: 'Criar Conta'),
                 Padding(
                   padding: EdgeInsets.all(32),
                   child: Form(

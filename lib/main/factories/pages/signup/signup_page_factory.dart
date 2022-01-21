@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../../../ui/pages/pages.dart';
 import '../../factories.dart';
 
-Widget makeLoginPage() {
-  final presenter = Get.put<LoginPresenter>(makeGetxLoginPresenter());
-  return LoginPage(presenter);
+Widget makeSignUpPage() {
+  final presenter = Get.put<SignUpPresenter>(makeGetxSignUpPresenter());
+  return SignUpPage(presenter);
 }

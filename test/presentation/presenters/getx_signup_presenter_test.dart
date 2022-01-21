@@ -311,14 +311,13 @@ void main() {
   test('Should emit UnexpectedError if SaveCurrent Account Fails', () async {
     mockSaveCurrentAccountError();
 
+    sut.validateName(name);
     sut.validateEmail(email);
     sut.validatePassword(password);
     sut.validatePasswordConfirmation(passwordConfirmation);
-    sut.validateName(name);
 
+    expectLater(sut.mainError.stream, emitsInOrder([null, UIError.unexpected]));
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError
-        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
 
     await sut.signUp();
   });
@@ -329,6 +328,7 @@ void main() {
     sut.validatePasswordConfirmation(passwordConfirmation);
     sut.validateName(name);
 
+    expectLater(sut.mainError.stream, emits(null));
     expectLater(sut.isLoading.stream, emits(true));
 
     await sut.signUp();
@@ -353,8 +353,7 @@ void main() {
     sut.validateName(name);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError
-        .listen(expectAsync1((error) => expect(error, UIError.emailInUse)));
+    expectLater(sut.mainError.stream, emitsInOrder([null, UIError.emailInUse]));
 
     await sut.signUp();
   });
@@ -368,8 +367,7 @@ void main() {
     sut.validateName(name);
 
     expectLater(sut.isLoading.stream, emitsInOrder([true, false]));
-    sut.mainError
-        .listen(expectAsync1((error) => expect(error, UIError.unexpected)));
+    expectLater(sut.mainError.stream, emitsInOrder([null, UIError.unexpected]));
 
     await sut.signUp();
   });

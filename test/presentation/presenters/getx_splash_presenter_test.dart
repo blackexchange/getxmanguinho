@@ -47,6 +47,14 @@ void main() {
     await sut.checkAccount(durationInSeconds: 0);
   });
 
+  test('Should go to login on null token', () async {
+    mockLoadCurrentAccount(account: AccountEntity(token: null));
+
+    sut.navigateToController
+        .listen(expectAsync1((page) => expect(page, '/login')));
+    await sut.checkAccount(durationInSeconds: 0);
+  });
+
   test('Should go to login on null result', () async {
     mockLoadCurrentAccount(account: null);
 
