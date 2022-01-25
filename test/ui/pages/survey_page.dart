@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mockito/mockito.dart';
@@ -9,35 +8,34 @@ import 'package:testes/ui/helpers/errors/ui_error.dart';
 
 import 'package:testes/ui/pages/pages.dart';
 
-class LoginPresenterSpy extends Mock implements LoginPresenter {}
+class SurveysPresenterSpy extends Mock implements SurveysPresenter {}
 
 void main() {
-  LoginPresenter presenter;
+  SurveysPresenter presenter;
 
-  var emailError = Rx<UIError>();
-  var passwordError = Rx<UIError>();
-  var mainError = Rx<UIError>();
-  var navigateTo = RxString();
+  var loadSurveys = RxList<SurveyViewModel>();
+
   var isFormValid = RxBool();
   var isLoading = RxBool();
 
+  StreamController<List<SurveyViewModel>> loadSurveysController;
+
   void mockStreams() {
-    when(presenter.emailError).thenAnswer((_) => emailError);
-    when(presenter.passwordError).thenAnswer((_) => passwordError);
     when(presenter.isFormValid).thenAnswer((_) => isFormValid);
     when(presenter.isLoading).thenAnswer((_) => isLoading);
-    when(presenter.mainError).thenAnswer((_) => mainError);
-    when(presenter.navigateTo).thenAnswer((_) => navigateTo);
+    when(presenter.loadSurveysList).thenAnswer((_) => loadSurveys);
+    when(presenter.loadSurveysController)
+        .thenAnswer((_) => loadSurveysController.stream);
   }
 
   Future<void> loadPage(WidgetTester tester) async {
-    presenter = Get.put<LoginPresenter>(LoginPresenterSpy());
+    presenter = Get.put<SurveysPresenter>(SurveysPresenterSpy());
     mockStreams();
 
     final loginPage = GetMaterialApp(
-      initialRoute: '/login',
+      initialRoute: '/surveys',
       getPages: [
-        GetPage(name: '/login', page: () => LoginPage(presenter)),
+        GetPage(name: '/surveys', page: () => SurveysPage(presenter)),
         GetPage(
             name: '/any_route', page: () => Scaffold(body: Text('fake page'))),
       ],
@@ -45,6 +43,72 @@ void main() {
     await tester.pumpWidget(loginPage);
   }
 
+  List<SurveyViewModel> makeSurveys() => [
+        SurveyViewModel(
+            id: '1', question: 'Question 1', date: 'any_date', didAnswer: true),
+        SurveyViewModel(
+            id: '2', question: 'Question 2', date: 'any_date', didAnswer: false)
+      ];
+
+  List<SurveyViewModel> makeSurveysGet() => [
+        SurveyViewModel(
+            id: '1', question: 'Question 1', date: 'any_date', didAnswer: true),
+        SurveyViewModel(
+            id: '2', question: 'Question 2', date: 'any_date', didAnswer: false)
+      ];
+
+  testWidgets('Should call LoadSurveys on page load',
+      (WidgetTester tester) async {
+    await loadPage(tester);
+    //verify(presenter.loadData()).called(1);
+  });
+
+  testWidgets('Should call loading', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    isLoading.value = true;
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    isLoading.value = false;
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    isLoading.value = true;
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    isLoading.value = null;
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('Should error if load fail', (WidgetTester tester) async {
+    await loadPage(tester);
+
+    loadSurveysController.addError(UIError.unexpected.description);
+    await tester.pump();
+
+    expect(find.text('Algo errado aconteceu.'), findsOneWidget);
+    expect(find.text('Recarregar'), findsOneWidget);
+    expect(find.text('Question 1'), findsNothing);
+  });
+
+  testWidgets('Should present list if load success',
+      (WidgetTester tester) async {
+    await loadPage(tester);
+
+    //loadSurveysController.add(makeSurveys());
+    loadSurveys.addAll(makeSurveys());
+    print(loadSurveys);
+    await tester.pump();
+
+    expect(find.text('Algo errado aconteceu.'), findsOneWidget);
+    expect(find.text('Recarregar'), findsNothing);
+    expect(find.text('Question 1'), findsOneWidget);
+  });
+
+/*
   testWidgets('Should validate with correct initial state',
       (WidgetTester tester) async {
     await loadPage(tester);
@@ -57,7 +121,6 @@ void main() {
     await tester.enterText(find.bySemanticsLabel('Senha'), senha);
     verify(presenter.validatePassword(senha));
   });
-
   testWidgets('Should present error if email is invalid',
       (WidgetTester tester) async {
     await loadPage(tester);
@@ -142,15 +205,7 @@ void main() {
     verify(presenter.auth()).called(1);
   });
 
-  testWidgets('Should call loading', (WidgetTester tester) async {
-    await loadPage(tester);
-
-    isLoading.value = true;
-    await tester.pump();
-
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-  });
-
+ 
   testWidgets('Should hide loading', (WidgetTester tester) async {
     await loadPage(tester);
 
@@ -211,4 +266,5 @@ void main() {
 
     verify(presenter.goToSignUp()).called(1);
   });
+*/
 }

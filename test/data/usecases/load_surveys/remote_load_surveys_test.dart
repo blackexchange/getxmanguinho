@@ -6,7 +6,7 @@ import 'package:testes/data/http/http.dart';
 import 'package:testes/domain/helpers/helpers.dart';
 import 'package:testes/data/usecases/usecases.dart';
 
-class HttpClientSpy extends Mock implements HttpClient<List<Map>> {}
+class HttpClientSpy extends Mock implements HttpClient {}
 
 void main() {
   RemoteLoadSurveys sut;

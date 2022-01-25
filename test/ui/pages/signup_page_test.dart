@@ -52,6 +52,7 @@ void main() {
     await tester.pumpWidget(signUpPage);
   }
 
+/*
   testWidgets('Should load with correct initial state',
       (WidgetTester tester) async {
     await loadPage(tester);
@@ -87,7 +88,7 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
-
+*/
   testWidgets('Should validate with correct initial state',
       (WidgetTester tester) async {
     await loadPage(tester);
