@@ -29,7 +29,7 @@ class App extends StatelessWidget {
         GetPage(
             name: '/surveys',
             page: makeSurveysPage,
-            transition: Transition.fade),
+            transition: Transition.fadeIn),
       ],
     );
   }

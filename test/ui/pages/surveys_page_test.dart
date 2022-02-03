@@ -11,19 +11,14 @@ class SurveysPresenterSpy extends Mock implements SurveysPresenter {}
 
 void main() {
   SurveysPresenterSpy presenter;
-  StreamController<bool> isLoadingController;
   StreamController<List<SurveyViewModel>> loadSurveysController;
 
   void initStreams() {
-    isLoadingController = StreamController<bool>();
     loadSurveysController = StreamController<List<SurveyViewModel>>();
   }
 
   void mockStreams() {
-    when(presenter.isLoadingStream)
-        .thenAnswer((_) => isLoadingController.stream);
-
-    when(presenter.laodSurveysStream)
+    when(presenter.surveysStream)
         .thenAnswer((_) => loadSurveysController.stream);
   }
 
@@ -53,28 +48,10 @@ void main() {
     await loadPage(tester);
     verify(presenter.loadData()).called(1);
   });
-  testWidgets('Should call loading', (WidgetTester tester) async {
-    await loadPage(tester);
-
-    isLoadingController.add(true);
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    isLoadingController.add(false);
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-
-    isLoadingController.add(true);
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    isLoadingController.add(null);
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-  });
 
   testWidgets('Should error if load fail', (WidgetTester tester) async {
     await loadPage(tester);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     loadSurveysController.addError(UIError.unexpected.description);
     await tester.pump();
@@ -82,10 +59,12 @@ void main() {
     expect(find.text('Algo errado aconteceu.'), findsOneWidget);
     expect(find.text('Recarregar'), findsOneWidget);
     expect(find.text('Question 1'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('Should present list if success', (WidgetTester tester) async {
     await loadPage(tester);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     loadSurveysController.add(makeSurveys());
     await tester.pump();
@@ -96,6 +75,7 @@ void main() {
     expect(find.text('Question 2'), findsWidgets);
     expect(find.text('Date 1'), findsWidgets);
     expect(find.text('Date 2'), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('Should call LoadSurveuys on reload button',

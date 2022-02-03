@@ -1,43 +1,32 @@
-import 'dart:async';
-
-import 'package:get/get.dart';
 import 'package:meta/meta.dart';
-import 'package:testes/ui/pages/surveys/survey_viewmodel.dart';
-import 'package:testes/ui/pages/surveys/surveys_presenter.dart';
-import '../../ui/helpers/errors/errors.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
-import '../../ui/pages/login/login_presenter.dart';
 import '../../domain/helpers/helpers.dart';
+import '../../ui/helpers/helpers.dart';
+import '../../ui/pages/pages.dart';
 import '../../domain/usecases/usecases.dart';
 
-import '../protocols/protocols.dart';
-
-class GetxSurveysPresenter {
+class GetxSurveysPresenter implements SurveysPresenter {
   final LoadSurveys loadSurveys;
+  final _surveys = Rx<List<SurveyViewModel>>();
+
+  Stream<List<SurveyViewModel>> get surveysStream => _surveys.stream;
 
   GetxSurveysPresenter({@required this.loadSurveys});
 
-  var mainError = Rx<UIError>();
-  var navigateTo = RxString();
-  var isFormValid = false.obs;
-  var isLoading = false.obs;
-  var loadSurveysList = RxList<SurveyViewModel>();
-  var loadSurveysController;
-
   Future<void> loadData() async {
     try {
-      mainError.value = null;
-      isLoading.value = true;
-    } on DomainError catch (error) {
-      switch (error) {
-        case DomainError.invalidCredentials:
-          mainError.value = UIError.invalidCredentials;
-          break;
-        default:
-          mainError.value = UIError.unexpected;
-      }
-
-      isLoading.value = false;
-    }
+      final surveys = await loadSurveys.load();
+      _surveys.value = surveys
+          .map((survey) => SurveyViewModel(
+              id: survey.id,
+              question: survey.question,
+              date: DateFormat('dd MMM yyyy').format(survey.dateTime),
+              didAnswer: survey.didAnswer))
+          .toList();
+    } on DomainError {
+      _surveys.subject.addError(UIError.unexpected.description);
+    } finally {}
   }
 }
