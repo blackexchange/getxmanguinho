@@ -1,5 +1,5 @@
 import '../../../../presentation/protocols/validation.dart';
-import '../../../../validation/validators/validators.dart';
+import '../../../composites/composites.dart';
 import '../../../../validation/protocols/protocols.dart';
 import '../../../builders/builders.dart';
 
