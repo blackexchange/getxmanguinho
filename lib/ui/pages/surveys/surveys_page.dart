@@ -1,10 +1,8 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
-import 'package:testes/ui/pages/pages.dart';
-
+import '../../../ui/components/components.dart';
+import '../../../ui/pages/pages.dart';
 import 'components/components.dart';
-
 import 'surveys_presenter.dart';
 
 class SurveysPage extends StatelessWidget {
@@ -21,37 +19,11 @@ class SurveysPage extends StatelessWidget {
             stream: presenter.surveysStream,
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          snapshot.error,
-                          style: TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        RaisedButton(
-                          onPressed: presenter.loadData,
-                          child: Text('Recarregar'),
-                        )
-                      ]),
-                );
+                return ReloadScreen(
+                    error: snapshot.error, reload: presenter.loadData);
               }
               if (snapshot.hasData) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: CarouselSlider(
-                    options: CarouselOptions(
-                        aspectRatio: 1, enlargeCenterPage: true),
-                    items: snapshot.data
-                        .map((viewModel) => SurveyItem(viewModel))
-                        .toList(),
-                  ),
-                );
+                return SurveyItems(snapshot.data);
               }
               return Center(
                 child: CircularProgressIndicator(),
